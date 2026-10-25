@@ -3,14 +3,14 @@ echo "=== Збирання проєкту (Release) ==="
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j$(nproc)
 
-echo -e "\n=== Етап 2: Режим OWNED (Найшвидший варіант) ==="
-./build/stage2_pipeline --lines 1000000 --workers 4 --mode owned | grep -E "checksum|W="
+echo -e "\n=== Етап 3: Пул потоків (Еталонна швидкість) ==="
+./build/stage3_pool --lines 5000000 --threads 4 | grep -E "checksum|T="
 
-echo -e "\n=== Етап 2: Режим CHUNK (Проміжні результати) ==="
-./build/stage2_pipeline --lines 1000000 --workers 4 --mode chunk | grep -E "checksum|W="
+echo -e "\n=== Етап 3: False sharing - PACKED ==="
+./build/stage3_pool --lines 5000000 --threads 4 --counters packed --progress | grep -E "checksum|T="
 
-echo -e "\n=== Етап 2: Режим GLOBAL (Найбільше блокувань) ==="
-./build/stage2_pipeline --lines 1000000 --workers 4 --mode global | grep -E "checksum|W="
+echo -e "\n=== Етап 3: False sharing - PADDED (Вирівняно по кеш-лінії) ==="
+./build/stage3_pool --lines 5000000 --threads 4 --counters padded --progress | grep -E "checksum|T="
 
-echo -e "\n=== Етап 2: Перевірка помилки (fail-chunk 5) ==="
-./build/stage2_pipeline --lines 1000000 --workers 2 --fail-chunk 5 || echo "Програма коректно завершилась із кодом 1 (без зависання)"
+echo -e "\n=== Етап 3: Перевірка винятків (доставка через future) ==="
+./build/stage3_pool --lines 1000000 --threads 4 --max-bad-per-chunk 10 || echo "Програма коректно завершилась із кодом 2"
