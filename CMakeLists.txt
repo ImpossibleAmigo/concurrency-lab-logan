@@ -12,3 +12,7 @@ target_include_directories(stage0_seq PRIVATE include)
 # Етап 1
 add_executable(stage1_threads src/stage1_threads.cpp)
 target_include_directories(stage1_threads PRIVATE include)
+
+# Етап 2
+add_executable(stage2_pipeline src/stage2_pipeline.cpp)
+target_include_directories(stage2_pipeline PRIVATE include)

@@ -3,14 +3,14 @@ echo "=== Збирання проєкту (Release) ==="
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j$(nproc)
 
-echo -e "\n=== Етап 1: Режим LOCAL (Без спільного стану - Еталон) ==="
-./build/stage1_threads --lines 1000000 --threads 4 --mode local | grep -E "checksum|T="
+echo -e "\n=== Етап 2: Режим OWNED (Найшвидший варіант) ==="
+./build/stage2_pipeline --lines 1000000 --workers 4 --mode owned | grep -E "checksum|W="
 
-echo -e "\n=== Етап 1: Режим ATOMIC (Коректно, але повільніше) ==="
-./build/stage1_threads --lines 1000000 --threads 4 --mode atomic | grep -E "checksum|T="
+echo -e "\n=== Етап 2: Режим CHUNK (Проміжні результати) ==="
+./build/stage2_pipeline --lines 1000000 --workers 4 --mode chunk | grep -E "checksum|W="
 
-echo -e "\n=== Етап 1: Режим RACE (Навмисна помилка - сума має 'попливти') ==="
-./build/stage1_threads --lines 1000000 --threads 4 --mode race | grep -E "checksum|T="
+echo -e "\n=== Етап 2: Режим GLOBAL (Найбільше блокувань) ==="
+./build/stage2_pipeline --lines 1000000 --workers 4 --mode global | grep -E "checksum|W="
 
-echo -e "\n=== Етап 1: Перевірка скасування (Deadline 10ms) ==="
-./build/stage1_threads --lines 5000000 --threads 4 --mode local --deadline-ms 10 | grep -E "PARTIAL|checksum|T="
+echo -e "\n=== Етап 2: Перевірка помилки (fail-chunk 5) ==="
+./build/stage2_pipeline --lines 1000000 --workers 2 --fail-chunk 5 || echo "Програма коректно завершилась із кодом 1 (без зависання)"
