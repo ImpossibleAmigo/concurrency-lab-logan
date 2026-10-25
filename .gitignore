@@ -1,0 +1,13 @@
+# CMake build directory
+build/
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+compile_commands.json
+
+# VS Code settings
+.vscode/
+
+# OS generated files
+.DS_Store
