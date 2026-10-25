@@ -7,7 +7,7 @@
 #include <thread>
 #include <atomic>
 #include <mutex>
-#include <stop_token>
+#include <stop_token> 
 
 using namespace logan;
 using namespace std::chrono;
@@ -129,7 +129,11 @@ int main(int argc, char* argv[]) {
         partial = true;
     }
 
-    workers.clear();
+    for (auto& w : workers) {
+        if (w.joinable()) {
+            w.join();
+        }
+    }
     auto t2 = steady_clock::now();
 
     if (mode == "race") {
