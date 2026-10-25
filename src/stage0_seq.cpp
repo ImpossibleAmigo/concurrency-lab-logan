@@ -15,7 +15,7 @@
 // Структура для розібраного рядка (п. 2.4)
 struct Record {
     std::uint64_t ts_ms;
-    std::string_view path;
+    std::string path;
     int status;
     std::uint32_t bytes;
     std::uint32_t latency_ms;
@@ -30,7 +30,7 @@ struct Stats {
     
     std::array<std::uint32_t, 600> statuses{};
     std::array<std::uint32_t, 10000> latencies{};
-    std::unordered_map<std::string_view, std::uint32_t> paths;
+    std::unordered_map<std::string, std::uint32_t> paths;
     
     void merge(const Stats& other) {
         ok += other.ok;
@@ -51,6 +51,10 @@ struct Stats {
 };
 
 std::optional<Record> parse_line(std::string_view line) {
+    if (line.empty()) return std::nullopt;
+    if (line.back() == '\r') {
+        line.remove_suffix(1);
+    }
     if (line.empty()) return std::nullopt;
 
     Record rec{};
@@ -78,7 +82,7 @@ std::optional<Record> parse_line(std::string_view line) {
 
     auto path_str = next_token();
     if (!path_str || path_str->empty() || path_str->front() != '/') return std::nullopt;
-    rec.path = *path_str;
+    rec.path = std::string(*path_str);
 
     auto status_str = next_token();
     if (!status_str || status_str->front() == '+' || status_str->front() == '-') return std::nullopt;
@@ -164,7 +168,7 @@ int main(int argc, char* argv[]) {
     auto end_proc = std::chrono::steady_clock::now();
 
     auto start_rep = std::chrono::steady_clock::now();
-    std::vector<std::pair<std::string_view, std::uint32_t>> sorted_paths(stats.paths.begin(), stats.paths.end());
+    std::vector<std::pair<std::string, std::uint32_t>> sorted_paths(stats.paths.begin(), stats.paths.end());
     std::sort(sorted_paths.begin(), sorted_paths.end(), [](const auto& a, const auto& b) {
         if (a.second != b.second) return a.second > b.second;
         return a.first < b.first;
